@@ -1,4 +1,3 @@
-
 #include <Arduino.h>
 #include "BlockA.h" 
 #include "driver/ledc.h" 
@@ -14,8 +13,7 @@ void initMovement() {
     // Motor B (Right) Direction
     pinMode(MTRB_IN1, OUTPUT);
     pinMode(MTRB_IN2, OUTPUT);
-    // Standby Pin
-    pinMode(MTR_STBY_PIN, OUTPUT);
+    // Standby 
     
     // Set 4 sensor pins as inputs
     pinMode(LINE_OUTER_LEFT, INPUT_PULLDOWN);
@@ -34,8 +32,7 @@ void initMovement() {
  
     
     // 3. Enable TB6612FNG Driver (Set STBY HIGH)
-    digitalWrite(MTR_STBY_PIN, HIGH);
-    
+   
     stopMoving();
     
 }
@@ -119,8 +116,8 @@ uint8_t readLineSensors() {
     int or_val = digitalRead(LINE_OUTER_RIGHT);
 
     // Combine into a 4-bit pattern: OL IL IR OR
-    return (ol << 4) | (il << 3) | (CS << 2) | (ir << 1) | or_val;
-
+    return (ol << 4) | (il << 3) | (cs << 2) | (ir << 1) | or_val;
+}
 
 // 4. AUTONOMOUS LINE FOLLOWING  
 
