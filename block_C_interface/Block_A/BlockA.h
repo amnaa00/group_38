@@ -23,11 +23,10 @@
 
 // --- 4 IR -SENSOR PINS (Digital Inputs) ---
 //  We use 4 independent pins for the 4 sensors.
-#define LINE_OUTER_LEFT   34 // OL
-#define LINE_INNER_LEFT   35 // IL
+#define LINE_OUTER_LEFT   32// OL
 #define LINE_CENTER 27
-#define LINE_INNER_RIGHT  32 // IR
-#define LINE_OUTER_RIGHT  33 // OR
+#define LINE_INNER_RIGHT  34// IR
+
 
 // --- PWM CHANNEL & SPEED SETTINGS ---
 #define MTRA_CH    0  // ESP32 PWM Channel 0
