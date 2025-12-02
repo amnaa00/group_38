@@ -136,38 +136,38 @@ void runLineFollow() {
     switch (pattern) {
         
         // 1. PERFECT/NEAR-PERFECT CENTERED (OL IL IR OR) ---
-        case 0b00100: // Only Center ON
-        case 0b01110: // Inner three ON (Ideal)
-        case 0b00110: // Center & Inner Right ON (Slightly left)
-        case 0b01100: // Inner Left & Center ON (Slightly right)
+        case 0b11011: // Only Center ON
+        case 0b10001: // Inner three ON (Ideal)
+        case 0b11001: // Center & Inner Right ON (Slightly left)
+        case 0b10011: // Inner Left & Center ON (Slightly right)
             ledcWrite(MTRA_EN, speed);
             ledcWrite(MTRB_EN, speed);
             break;
 
         //  2. GENTLE CORRECTION LEFT (Drifting Right) ---
-        case 0b00111: // 0011: Inner Right and Outer Right are on line.
-        case 0b00011: 
-        case 0b00001:// 0001: Only Outer Right on line.
+        case 0b11000: // 0011: Inner Right and Outer Right are on line.
+        case 0b11100: 
+        case 0b11110:// 0001: Only Outer Right on line.
             ledcWrite(MTRA_EN, speed);        // Full speed Motor A (Left)
             ledcWrite(MTRB_EN, speed / 2);   // Half speed Motor B (Right) (Gentle correction)
             break;
 
         // 3. GENTLE CORRECTION RIGHT (Drifting Left) ---
-        case 0b11100: // 1100: Outer Left and Inner Left are on line.
-        case 0b11000:
-        case 0b10000: // 1000: Only Outer Left on line.
+        case 0b00011: // 1100: Outer Left and Inner Left are on line.
+        case 0b00111:
+        case 0b01111: // 1000: Only Outer Left on line.
             ledcWrite(MTRA_EN, speed / 2);    // Half speed Motor A (Left)
             ledcWrite(MTRB_EN, speed);       // Full speed Motor B (Right) (Gentle correction)
             break;
 
         //  4. LOST LINE / SAFETY STOP ---
-        case 0b00000: // 0000: Lost line 
+        case 0b11111: // 0000: Lost line 
             stopMoving();
             break;
 
         // 5. INTERSECTION / STOP LINE ---
-        case 0b11111: // 1111: All sensors on. Intersection or Wide Stop Line.
-        case 0b01111: // Almost all sensors ON 
+        case 0b00000: // 1111: All sensors on. Intersection or Wide Stop Line.
+        case 0b10000: // Almost all sensors ON 
             ledcWrite(MTRA_EN, speed / 3);
             ledcWrite(MTRB_EN, speed / 3);
             break;
