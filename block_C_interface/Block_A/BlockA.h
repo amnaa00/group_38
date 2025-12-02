@@ -19,13 +19,13 @@
 #define MTRB_IN2 22 // BIN2 (Direction 2)
 #define MTRB_EN  21 // PWMB (Speed)
 
-// --- TB6612FNG Standby Pin ---
-#define MTR_STBY_PIN  16 
+
 
 // --- 4 IR -SENSOR PINS (Digital Inputs) ---
 //  We use 4 independent pins for the 4 sensors.
 #define LINE_OUTER_LEFT   34 // OL
 #define LINE_INNER_LEFT   35 // IL
+#define LINE_CENTER 27
 #define LINE_INNER_RIGHT  32 // IR
 #define LINE_OUTER_RIGHT  33 // OR
 
@@ -34,8 +34,9 @@
 #define MTRB_CH    1  // ESP32 PWM Channel 1
 #define PWM_FREQ       5000 
 #define PWM_RESOLUTION 8    
-#define BASE_SPEED     150  
-#define MANUAL_SPEED   180  
+#define BASE_SPEED     200  
+#define MANUAL_SPEED   230
+#define Turn_speed 150  
 
 
 // 2. FUNCTION DECLARATIONS 
