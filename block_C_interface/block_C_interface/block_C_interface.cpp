@@ -4,13 +4,17 @@
 #include "block_A_movement.h"
 #include "block_B_navigation.h"
 #include "block_C_interface.h"
+#include <SPI.h>
 // Define pins
 // ----- OLED pins (already in your code) -----
-#define TFT_CS   16
+#define TFT_CS   5
 #define TFT_DC   2
 #define TFT_RST  4
+#define TFT_MOSI 23 // SDA
+#define TFT_SCLK 18 // SCL
 
-const int OBSTACLE_LIMIT_CM = 20;   // stop if object is closer than this
+
+const int OBSTACLE_LIMIT_CM = 3;   // stop if object is closer than this
 BluetoothSerial BT;
 
 // Create display object
@@ -26,19 +30,21 @@ void initBluetooth() {
 }
 
 void initOLED() {
+  SPI.begin(TFT_SCLK, -1, TFT_MOSI, TFT_CS);
+  // SCK, MISO, MOSI, SS
    // Initialise the ST7735 driver
-  display.initR(INITR_BLACKTAB);      
-  display.fillScreen(ST77XX_BLACK);   // clear everything
+ // display.initR(INITR_BLACKTAB); 
+  display.initR(INITR_MINI160x80);
 
-  display.setRotation(1);             // optional, try 0..3 to match orientation
-  display.setTextSize(1);             // small text
-  display.setTextColor(ST77XX_WHITE); // white text on black background
+  display.setRotation(1);
+  display.fillScreen(ST77XX_BLACK);
 
   display.setCursor(0, 0);
-  display.println("Robot Ready");
- 
-
-}
+  display.setTextColor(ST77XX_WHITE);
+  display.setTextSize(2);
+  display.println("Robot Ready!");
+}     
+  
 
 
 bool isManualMode() {
@@ -48,13 +54,13 @@ bool isManualMode() {
 int getSelectedDestination() {
   return selectedDest;
 }
-bool isIntersection() {
-  uint8_t pattern = readLineSensors();
-  return (pattern == 0b1111);  // all sensors on line
-}
+//bool isIntersection() {
+  //uint8_t pattern = readLineSensors();
+  //return (pattern == 0b1111);  // all sensors on line
+/}
 void goStraightOverIntersection() {
     moveForward();
-    delay(400);
+    delay(300);
 }
 
 void followUntilIntersection() {
@@ -70,15 +76,16 @@ void followUntilIntersection() {
 
 void followBackToStart() {
    while (true) {
-        runLineFollow();
+        //runLineFollow();
         uint8_t pattern = readLineSensors();
         if (isIntersection()) {
             moveForward();
             delay(300);
-            runLineFollow();}
+           // runLineFollow();}
         if (pattern == 0b0000) {
-               stopMoving();
+               //stopMoving();
                dropObject();
+              // dropObject();
             }   // home reached
         }
     }
@@ -91,7 +98,7 @@ void showStatusOnOLED(const char* msg) {
 
   // First line - mode
   display.setCursor(0, 0);
-  display.setTextSize(1);
+  display.setTextSize(2);
   display.setTextColor(ST77XX_YELLOW);
   display.print("Mode: ");
   if (manualMode) {
@@ -148,7 +155,7 @@ void handleBluetooth() {
     if (cmd == 'S') stopMoving();   // block_A
      if (cmd == 'P') {               // pick up object
               stopMoving();
-              pickObject();         // from block_B_navigation
+              pickObject();     // from block_B_navigation
               showStatusOnOLED("Picked"); }  // oled
     if (cmd == 'D') {               // drop object
     stopMoving();
@@ -178,37 +185,49 @@ void handleBluetooth() {
         // first junction: turn left into branch and then follow line a bit
         turnLeft();
         delay(400);    // enough to align with new branch
-        moveForward();
-        delay(300);
+        goStraightOverIntersection()
         runLineFollow();
+        //if (isIntersection()) {
         //stopMoving();
+        //turnleft(); check instead 
+        //runLineFollow();
         reached = true;
       }
+      }
     }
-    else if (dest == 2) {
-      if (node == 1) {
+    else if (dest == 2) 
+      if (node == 2) {
         // go straight over first junction
         goStraightOverIntersection();
       } else if (node == 2) {
         turnLeft();
         delay(400);
-        moveForward();
-        delay(300);
+       goStraightOverIntersection()
         runLineFollow();
+        //if (isIntersection()) {
         //stopMoving();
-        reached = true;
+        //turnleft(); check instead 
+        //runLineFollow();
+        reached = true;}
+        
        
       }
     }
     else if (dest == 3) {
-      if (node < 3) {
+      if (node < 2) {
         goStraightOverIntersection();
       } else if (node == 3) {
        runLineFollow();// third junction is destination
+        //if (isIntersection()) {
+        //stopMoving();
+        //turnleft(); check instead 
+        //runLineFollow();
         reached = true;
       }
     }
+  
   }
+ }
  }
 
 
@@ -222,24 +241,36 @@ void handleAutoWithObstacle() {
   long d = getDistanceCm(); // get distance block B
 
   // simple check: valid reading and closer than limit
-  bool obstacle = (d > 0 && d < OBSTACLE_LIMIT_CM);
+ // bool obstacle = (d > 0 && d < OBSTACLE_LIMIT_CM);
+    bool obstacle = false;
+  if (!obstacle && d >= 2 && d <= 5) {    
+    showStatusOnOLED("Obstacle ahead!");
+    stopMoving(); 
+   pickObject();;   // close gripper
 
-  if (obstacle) {
+    obstacle = true;  // do not grab again
+
+    // optional: freeze program after grabbing
+    // while (true) { delay(1000); }
+  }) {
     // stop the robot and show warning
-    stopMoving();   // from blockA_movement.h
+    //stopMoving();   // from blockA_movement.h
 
     //obst = true;
-    showStatusOnOLED("Obstacle ahead!");
+    //showStatusOnOLED("Obstacle ahead!");
      // pick it
-        pickObject();
+      //  pickObject();
 
         delay(300);
         moveBackward();
         uint8_t pattern = readLineSensors();
-        if (pattern == 0b0011)// need to be set to a specific pattern
+        if (pattern == 0b00)// need to be set to a specific pattern
          stopMoving();
          turnLeft();
          followBackToStart(); // continue following line
+         if (pattern == 0b00){
+          dropObject();
+         }
         obstacle = false;
 
   } 
