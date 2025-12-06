@@ -76,17 +76,19 @@ void followUntilIntersection() {
 
 void followBackToStart() {
    while (true) {
-        //runLineFollow();
+     
         uint8_t pattern = readLineSensors();
-        if (isIntersection()) {
+        // if (!rintersection) runLineFollow();
+        //else 
+        if (rintersection()) {
             moveForward();
             delay(300);
-           // runLineFollow();}
+            runLineFollow();}
         if (pattern == 0b0000) {
-               //stopMoving();
+               stopMoving();
                dropObject();
               // dropObject();
-            }   // home reached
+            }   // home reached}
         }
     }
 
@@ -264,11 +266,11 @@ void handleAutoWithObstacle() {
         delay(300);
         moveBackward();
         uint8_t pattern = readLineSensors();
-        if (pattern == 0b00)// need to be set to a specific pattern
-         stopMoving();
+        if (pattern == 0b0000)// need to be set to a specific pattern
+        {stopMoving();
          turnLeft();
          followBackToStart(); // continue following line
-         if (pattern == 0b00){
+         if (pattern == 0b0000){
           dropObject();
          }
         obstacle = false;
