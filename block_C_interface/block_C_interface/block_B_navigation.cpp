@@ -1,57 +1,43 @@
-#include "block_B_navigation.h"
 #include <Arduino.h>
+#include <ESP32Servo.h>
+#include "block_A_movement.h"
 
-Servo scanServo;
-Servo gripperServo;
+// ========= ULTRASONIC PINS =========
+// Ball ultrasonic
+#define TRIG_PIN        13
+#define ECHO_PIN        12
+
+// Front ultrasonic (obstacle)
+#define FRONT_TRIG_PIN  27
+#define FRONT_ECHO_PIN  26
+
+// ========= SERVO PIN =========
+#define GRIPPER_SERVO_PIN 5
+
+Servo gripper;
 
 void initBlockB() {
+  // Ball ultrasonic
   pinMode(TRIG_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
 
-  scanServo.attach(SCAN_SERVO_PIN);
-  scanServo.write(90);
+  // Front ultrasonic
+  pinMode(FRONT_TRIG_PIN, OUTPUT);
+  pinMode(FRONT_ECHO_PIN, INPUT);
 
-  gripperServo.attach(GRIPPER_SERVO_PIN);
-  gripperServo.write(90);
+  // Gripper servo
+  gripper.attach(GRIPPER_SERVO_PIN);
+  gripper.write(90);    // neutral / closed
 }
 
-long getDistanceCm() {
-  long duration;
+// ========= MOTOR PLACEHOLDER =========
+//void stopMoving();
 
-  digitalWrite(TRIG_PIN, LOW);
-  delayMicroseconds(2);
-  digitalWrite(TRIG_PIN, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(TRIG_PIN, LOW);
+//void moveForward();
 
-  duration = pulseIn(ECHO_PIN, HIGH, 30000);
 
-  if (duration <= 0) return 300;
 
-  long distance = duration * 0.0343 / 2;
-  if (distance > 300) distance = 300;
-
-  return distance;
-}
-
-int lookLeft() {
-  scanServo.write(150);
-  delay(450);
-  int d = getDistanceCm();
-  delay(50);
-  scanServo.write(90);
-  return d;
-}
-
-int lookRight() {
-  scanServo.write(30);
-  delay(450);
-  int d = getDistanceCm();
-  delay(50);
-  scanServo.write(90);
-  return d;
-}
-
+// ========= GRIPPER FUNCTIONS =========
 void smoothOpen() {
   for (int angle = 90; angle >= 0; angle -= 2) {
     gripper.write(angle);
@@ -59,41 +45,96 @@ void smoothOpen() {
   }
 }
 
-
 void smoothClose() {
   for (int angle = 0; angle <= 90; angle += 2) {
     gripper.write(angle);
     delay(20);
   }
 }
+
+long readUltrasonicCm(uint8_t trigPin, uint8_t echoPin) {
+  digitalWrite(trigPin, LOW);
+  delay(1);     
+
+  digitalWrite(trigPin, HIGH);
+  delay(1);     
+  digitalWrite(trigPin, LOW);
+
+ long duration = pulseIn(echoPin, HIGH, 30000);
+
+  if (duration <= 0) return 300;
+
+  long distance = duration * 0.034 / 2;
+  if (distance > 300) distance = 300;
+
+  return distance;
+}
+
+long getDistanceCm() {
+  return readUltrasonicCm(TRIG_PIN, ECHO_PIN);
+}
+
+long getFrontDistanceCm() {
+  return readUltrasonicCm(FRONT_TRIG_PIN, FRONT_ECHO_PIN);
+}
+
 void pickObject() {
   smoothOpen();
-  delay(200);
+  d
   smoothClose();
 }
 
 void dropObject() {
   smoothOpen();
 }
+// ========= SETUP =========
 
-bool obstacleAhead() {
-  long d = getDistanceCm();
-  return (d > 0 && d < 20);
-}
 
-String getObstacleDecision() {
-  long front = getDistanceCm();
+// ========= LOOP =========
+//void loop() {
+  //static bool grabbed = false;
 
-  if (front < 20) {
+/*void OBSTACLE_CHECK(){
+  long frontDist = getFrontDistanceCm();
 
-    int leftD  = lookLeft();
-    int rightD = lookRight();
-
-    if (leftD > rightD)
-      return "TURN_LEFT";
-    else
-      return "TURN_RIGHT";
+  while (frontDist < 20) {
+    stopMoving();
+    delay(200);
+    return;  // do not continue
   }
 
-  return "CLEAR";
-}
+/*void OBSTACLE_CHECK() {
+  // If no obstacle, just return
+  if (getFrontDistanceCm() >= 20) return;
+
+  // Obstacle present: stop and wait until it is gone
+  stopMoving();
+
+  while (getFrontDistanceCm() < 20) {
+    stopMoving();
+
+    // optionally allow manual escape:
+          // so you can switch to manual if needed
+    delay(50);
+  }
+}*/
+
+  // When this function returns, the caller (followUntilIntersection)
+  // will continue with runLineFollow() on the next loop iteration
+
+
+
+  //moveMotorsForward();  // 
+
+  // 2) BALL PICKUP CHECK
+  //////long d = getBallDistanceCm();
+
+  //if (!grabbed && d >= 2 && d <= 5) {
+   ////// smoothOpen();
+    //delay(200);
+   // smoothClose();
+   // grabbed = true;
+  
+
+ // delay(200);
+
